@@ -11,7 +11,10 @@ declare module 'sveltext' {
 
 	export type Msg = string & { __brand: 'msg' };
 
-	export const msg: (descriptor: string | TemplateStringsArray | MessageDescriptor) => Msg;
+	export const msg: (
+		descriptor: string | TemplateStringsArray | MessageDescriptor,
+		...args: (string | number)[]
+	) => Msg;
 
 	export const plural: (count: number, selectors: Record<string, string>) => string;
 

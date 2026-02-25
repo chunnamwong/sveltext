@@ -138,22 +138,31 @@ export function transformTaggedTemplateExpression(
 	const id = generateMessageId(message, context);
 	const idLiteral = JSON.stringify(id);
 
-	if (tagName === 'msg') {
-		s.overwrite(start, end, idLiteral);
-		return;
-	}
-
 	if (tagName === 'plural') {
-		const variable = expressions.length === 0 ? '' : `, ${expressions[0]}`;
-		s.overwrite(start, end, `t(${idLiteral}${variable})`);
+		const variable = expressions.length === 0 ? '' : `, args: ${expressions[0]}`;
+		s.overwrite(start, end, `t({ id: ${idLiteral}${variable} })`);
 		return;
 	}
 
 	if (expressions.length === 0) {
-		s.overwrite(start, end, `t(${idLiteral})`);
+		let replacement;
+
+		if (tagName === 'msg') {
+			replacement = `{ id: ${idLiteral} }`;
+		} else {
+			replacement = `t({ id: ${idLiteral} })`;
+		}
+
+		s.overwrite(start, end, replacement);
 	} else {
 		let currentIndex = start;
-		let prefix = `t(${idLiteral}, { `;
+		let prefix;
+
+		if (tagName === 'msg') {
+			prefix = `{ id: ${idLiteral}, args: { `;
+		} else {
+			prefix = `t({ id: ${idLiteral}, args: { `;
+		}
 
 		for (let i = 0; i < expressions.length; i++) {
 			const expr = expressions[i];
@@ -163,7 +172,11 @@ export function transformTaggedTemplateExpression(
 			prefix = `, `;
 		}
 
-		s.overwrite(currentIndex, end, ` })`);
+		if (tagName === 'msg') {
+			s.overwrite(currentIndex, end, ` } }`);
+		} else {
+			s.overwrite(currentIndex, end, ` } })`);
+		}
 	}
 }
 
