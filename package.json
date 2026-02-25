@@ -1,6 +1,6 @@
 {
 	"name": "sveltext",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "A compiled, Svelte-first i18n library with Gettext-like syntax and ICU plurals.",
 	"keywords": [
 		"i18n",
