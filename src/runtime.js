@@ -21,7 +21,7 @@ export function getMessage(id) {
 	return message;
 }
 
-export function t(id, args) {
+export function t({ id, args }) {
 	const tokens = getMessage(id);
 
 	if (typeof args === 'object') {

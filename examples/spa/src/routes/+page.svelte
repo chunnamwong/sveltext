@@ -3,6 +3,7 @@
 	import { errors } from '$lib/helpers';
 
 	let name = 'John Doe';
+	let greeting = msg`Hello ${name}!`;
 	let itemCount = $state(1);
 
 	const itemLabel = $derived(
@@ -39,7 +40,7 @@
 <section>
 	<h2>{t`Interpolation and composition`}</h2>
 
-	<p>{t`Hello ${name}!`}</p>
+	<p>{t(greeting)}</p>
 
 	<p>{t`You have ${itemCount} (${itemLabel}).`}</p>
 
