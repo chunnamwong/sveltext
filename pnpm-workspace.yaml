@@ -1,0 +1,9 @@
+packages:
+  - sveltext
+  - examples/*
+
+onlyBuiltDependencies:
+  - esbuild
+
+overrides:
+  'sveltext': workspace:*

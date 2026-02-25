@@ -1,0 +1,55 @@
+{
+	"name": "sveltext",
+	"version": "0.0.7",
+	"description": "A compiled, Svelte-first i18n library with Gettext-like syntax and ICU plurals.",
+	"keywords": [
+		"i18n",
+		"vite",
+		"svelte",
+		"sveltekit",
+		"gettext",
+		"icu"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "Chun Nam Wong",
+		"url": "https://chunnamwong.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/chunnamwong/sveltext.git"
+	},
+	"type": "module",
+	"main": "index.js",
+	"files": [
+		"src"
+	],
+	"types": [
+		"./src/index.d.ts"
+	],
+	"exports": {
+		".": "./src/index.js",
+		"./vite": "./src/vite.js"
+	},
+	"bin": {
+		"sveltext": "./src/cli.js"
+	},
+	"packageManager": "pnpm@10.28.2",
+	"scripts": {},
+	"peerDependencies": {
+		"svelte": ">=5.0.0",
+		"vite": ">=5.0.0"
+	},
+	"dependencies": {
+		"@formatjs/icu-messageformat-parser": "^3.5.1",
+		"@sveltejs/acorn-typescript": "^1.0.9",
+		"acorn": "^8.16.0",
+		"commander": "^14.0.3",
+		"gettext-parser": "^9.0.1",
+		"magic-string": "^0.30.21",
+		"zimmerframe": "^1.1.4"
+	},
+	"devDependencies": {
+		"@types/node": "^24.10.13"
+	}
+}
