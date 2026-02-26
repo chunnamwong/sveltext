@@ -29,6 +29,11 @@ msgstr ""
 msgid "Interpolation and composition"
 msgstr ""
 
+msgid ""
+"Line 1\\n"
+"Line 2"
+msgstr ""
+
 msgctxt "badge"
 msgid "New"
 msgstr ""

@@ -40,6 +40,10 @@
 <section>
 	<h2>{t`Interpolation and composition`}</h2>
 
+	<p style="white-space: pre-wrap;">
+		{t`Line 1\nLine 2`}
+	</p>
+
 	<p>{t(greeting)}</p>
 
 	<p>{t`You have ${itemCount} (${itemLabel}).`}</p>
