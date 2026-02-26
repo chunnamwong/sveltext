@@ -29,6 +29,13 @@ msgstr "補間されたコンテキストメッセージ: {0}"
 msgid "Interpolation and composition"
 msgstr "補間と合成"
 
+msgid ""
+"Line 1\\n"
+"Line 2"
+msgstr ""
+"1行目\\n"
+"2行目"
+
 msgctxt "badge"
 msgid "New"
 msgstr "新着"

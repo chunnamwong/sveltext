@@ -84,7 +84,8 @@ export async function sveltext() {
 						const msgid = translations[key]['msgid'];
 						const context = translations[key]['msgctxt'] || '';
 						const hashedMsgid = generateMessageId(msgid, context);
-						messages[hashedMsgid] = parseMessage(translations[key]['msgstr'][0] || msgid);
+						const message = (translations[key]['msgstr'][0] || msgid).replace(/\\n/g, '\n');
+						messages[hashedMsgid] = parseMessage(message);
 					}
 				}
 
