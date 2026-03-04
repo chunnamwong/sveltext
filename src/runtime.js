@@ -1,14 +1,18 @@
+import { setContext, getContext } from 'svelte';
 import { parseMessage } from './po.js';
 
-/** @type {Record<string, unknown[]>} */
-let _messages;
-/** @type {Intl.PluralRules} */
-let _pr;
-/** @type {string} */
-export let locale;
+/**
+ * @typedef {Record<string, unknown[]>} MessageCatalog
+ */
 
-export function getMessage(id) {
-	let message = _messages[id];
+/**
+ * @typedef SveltextContext
+ * @property {MessageCatalog} messages
+ * @property {string} locale
+ */
+
+export function getMessage(id, messages) {
+	let message = messages[id];
 
 	if (!message) {
 		if (import.meta.env.DEV) {
@@ -21,8 +25,8 @@ export function getMessage(id) {
 	return message;
 }
 
-export function t({ id, args }) {
-	const tokens = getMessage(id);
+export function _({ id, args }, { messages, locale }) {
+	const tokens = getMessage(id, messages);
 
 	if (typeof args === 'object') {
 		return tokens
@@ -31,8 +35,9 @@ export function t({ id, args }) {
 	}
 
 	if (tokens[0][1] === 'plural' && typeof args === 'number') {
+		const pr = new Intl.PluralRules(locale);
 		const selectors = tokens[0][2];
-		const category = _pr.select(args);
+		const category = pr.select(args);
 		const selectorTokens = category in selectors ? selectors[category] : selectors['other'];
 		return selectorTokens.map((token) => (token === '#' ? args : token)).join('');
 	}
@@ -40,8 +45,26 @@ export function t({ id, args }) {
 	return tokens.join('');
 }
 
-export async function setLocale(_locale, messages) {
-	locale = _locale;
-	_messages = messages;
-	_pr = new Intl.PluralRules(_locale);
+export function createSveltextTFunction() {
+	const context = getSveltextContext();
+
+	return function t(messageDescriptor) {
+		return _(messageDescriptor, context);
+	};
+}
+
+const contextId = Symbol('sveltext');
+
+/**
+ * @returns {SveltextContext}
+ */
+export function getSveltextContext() {
+	return getContext(contextId);
+}
+
+export function setLocale(locale, messages) {
+	setContext(contextId, {
+		locale,
+		messages,
+	});
 }

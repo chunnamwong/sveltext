@@ -28,7 +28,7 @@ export async function runExtract() {
 		const code = (await fs.readFile(entry)).toString('utf-8');
 		if (code.includes('sveltext')) {
 			/** @type {import('./core.js').State} */
-			let _state = { messages: [], error: null };
+			let _state = { messages: [], error: null, tImport: null };
 			/** @type {import('./core.js').AST} */
 			let ast;
 

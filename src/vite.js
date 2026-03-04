@@ -46,12 +46,31 @@ export async function sveltext() {
 				}
 
 				/** @type {import('./core.js').State} */
-				const state = { messages: [], error: null };
+				const state = { tImport: null, messages: [], error: null };
 
 				traverse(ast, state, sveltextConfig.sourceLocale);
 
 				if (state.error !== null) {
 					this.error(state.error, state.error.start);
+				}
+
+				if (id.endsWith('.svelte')) {
+					if (state.tImport) {
+						const { specifier, declaration } = state.tImport;
+						if (specifier.count === 1) {
+							s.remove(declaration.start, declaration.end);
+						} else {
+							s.remove(specifier.start, specifier.end + 1);
+						}
+					}
+
+					if (state.messages.filter(({ tagName }) => tagName !== 'msg').length > 0) {
+						s.appendRight(
+							/** @type {any} */ (ast).instance.content.start,
+							`import { createSveltextTFunction } from 'sveltext/internal';
+const t = createSveltextTFunction();`,
+						);
+					}
 				}
 
 				for (const message of state.messages) {

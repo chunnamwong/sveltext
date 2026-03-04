@@ -33,6 +33,12 @@ import path from 'node:path';
  */
 
 /**
+ * @typedef TImport
+ * @property {{ start: number; end: number; count: number }} specifier
+ * @property {{ start: number; end: number }} declaration
+ */
+
+/**
  * @typedef StateError
  * @property {number} start
  * @property {string} message
@@ -40,6 +46,7 @@ import path from 'node:path';
 
 /**
  * @typedef State
+ * @property {TImport | null} tImport
  * @property {ExtractedMessage[]} messages
  * @property {StateError | null} error
  */
@@ -78,15 +85,13 @@ const UNIT_SEPARATOR = '\u001F';
  * @returns {string}
  */
 export function generateMessageId(msg, context = '') {
+	const handledMsg = msg + UNIT_SEPARATOR + (context || '');
+
 	if (process.env.NODE_ENV === 'development') {
-		return msg;
+		return handledMsg;
 	}
 
-	return crypto
-		.createHash('sha256')
-		.update(msg + UNIT_SEPARATOR + (context || ''))
-		.digest('base64')
-		.slice(0, 6);
+	return crypto.createHash('sha256').update(handledMsg).digest('base64').slice(0, 6);
 }
 
 /**
@@ -187,6 +192,34 @@ export function transformTaggedTemplateExpression(
  */
 export function traverse(ast, state, sourceLocale) {
 	walk(ast, state, {
+		ImportDeclaration(node, { next, state }) {
+			if (node.source.value === 'sveltext') {
+				const tImport = node.specifiers.find(
+					(specifier) =>
+						specifier.type === 'ImportSpecifier' &&
+						specifier.imported.type === 'Identifier' &&
+						specifier.imported.name === 't',
+				);
+
+				if (tImport) {
+					const { start: tImportStart, end: tImportEnd } = /** @type {any} */ (tImport);
+					const { start: nodeStart, end: nodeEnd } = /** @type {any} */ (node);
+
+					state.tImport = {
+						specifier: {
+							start: tImportStart,
+							end: tImportEnd,
+							count: node.specifiers.length,
+						},
+						declaration: {
+							start: nodeStart,
+							end: nodeEnd,
+						},
+					};
+				}
+			}
+			next();
+		},
 		TaggedTemplateExpression(node, { next, state }) {
 			if (node.tag.type === 'Identifier' && (node.tag.name === 't' || node.tag.name === 'msg')) {
 				const { message, expressions } = normalizeTaggedTemplateExpression(
