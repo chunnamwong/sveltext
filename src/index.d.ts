@@ -2,23 +2,38 @@ declare module 'sveltext' {
 	import type { Component, Snippet } from 'svelte';
 
 	export function t(descriptor: TemplateStringsArray, ...args: (string | number)[]): string;
-	export function t(descriptor: string, args?: Record<string, unknown>): string;
+	export function t(descriptor: MessageDescriptor): string;
 
 	export const c: (context: string) => {
 		t: (descriptor: TemplateStringsArray, ...args: (string | number)[]) => string;
-		msg;
+		msg: typeof msg;
 	};
 
-	export type Msg = string & { __brand: 'msg' };
+	export type MessageDescriptor = { id: string; args?: Record<string, unknown> };
 
 	export const msg: (
-		descriptor: string | TemplateStringsArray | MessageDescriptor,
+		descriptor: string | TemplateStringsArray,
 		...args: (string | number)[]
-	) => Msg;
+	) => MessageDescriptor;
 
 	export const plural: (count: number, selectors: Record<string, string>) => string;
 
-	export const T: Component<{ msg: Msg; [key: string]: Msg | Snippet }>;
+	export const T: Component<{ msg: MessageDescriptor; [key: string]: MessageDescriptor | Snippet }>;
+
+	export const SveltextRoot: Component<
+		SveltextContext & {
+			syncLangAttribute?: boolean;
+			onInit?: () => void;
+			children: Snippet;
+		}
+	>;
+
+	export type SveltextContext = {
+		messages: MessageCatalog;
+		locale: string;
+	};
+
+	export const _: (msg: MessageDescriptor, context: SveltextContext) => string;
 
 	export type Config = {
 		locales: string[];
@@ -29,9 +44,13 @@ declare module 'sveltext' {
 		};
 	};
 
-	export const setLocale: (locale: string, messages: Record<string, unknown[]>) => void;
+	export type MessageCatalog = Record<string, unknown[]>;
+}
 
-	export const locale: string;
+declare module 'sveltext/internal' {
+	import { t } from 'sveltext';
+
+	export const createSveltextTFunction: () => typeof t;
 }
 
 declare module 'sveltext/vite' {

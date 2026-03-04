@@ -14,6 +14,9 @@ msgstr ""
 msgid "Found a bug or weird edge case? Please open an issue:"
 msgstr ""
 
+msgid "Hello {name} from SvelteKit form actions!"
+msgstr ""
+
 msgid "Hello {name}!"
 msgstr ""
 
@@ -50,6 +53,9 @@ msgstr ""
 msgid "Refreshed"
 msgstr ""
 
+msgid "Send Email"
+msgstr ""
+
 msgid "Sub Page"
 msgstr ""
 
@@ -59,7 +65,13 @@ msgstr ""
 msgid "Test"
 msgstr ""
 
+msgid "Test Email to {name}"
+msgstr ""
+
 msgid "Toolbar: {refresh} {refreshFail}"
+msgstr ""
+
+msgid "Translate on server"
 msgstr ""
 
 msgid "You have {itemCount} ({itemLabel})."

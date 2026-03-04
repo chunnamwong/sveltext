@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { getMessage } from './runtime.js';
+	import { getMessage, getSveltextContext } from './runtime.js';
+	const context = getSveltextContext();
 	let { msg, ...snippets } = $props();
-	let parts = $derived(getMessage(msg.id));
+	let parts = $derived(getMessage(msg.id, context.messages));
 </script>
 
 {#each parts as part, index (index)}

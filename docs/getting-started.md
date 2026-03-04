@@ -48,29 +48,67 @@ export default defineConfig({
 });
 ```
 
-**3. Load .po catalogs in client or server hooks**
+**3. Decide Locale Matching Strategy**
 
-Depending on your rendering strategy, load the `.po` catalogs in either client hooks or server hooks. Once loaded, call setLocale to initialize the dictionary.
+<details>
+  <summary>For SSR: Cookie-based and Accept-Language Header Detection</summary>
 
-Here are some sample recipes:
+**3.1 Extend event.locals**
 
-**SSR** (`hooks.server.ts`):
+Modify **app.d.ts** to add a `currentLocale` field to `event.locals`
+
+```ts
+// See https://svelte.dev/docs/kit/types#app.d.ts
+// for information about these interfaces
+declare global {
+	namespace App {
+		// interface Error {}
+		interface Locals {
+			currentLocale: string;
+		}
+		// interface PageData {}
+		// interface PageState {}
+		// interface Platform {}
+	}
+}
+
+export {};
+```
+
+**3.2** Detect locale in `hooks.server.ts`
+
+Create or modify `hooks.server.ts` to determine the locale when a request starts processing:
 
 ```ts
 import type { Handle } from '@sveltejs/kit';
-import { setCurrentLocale, inferPreferredLanguage } from '$lib/helpers';
+
+function inferPreferredLocale(acceptLanguageHeader: string | null) {
+	if (acceptLanguageHeader) {
+		if (acceptLanguageHeader.startsWith('en')) {
+			return 'en';
+		}
+
+		if (acceptLanguageHeader.startsWith('ja')) {
+			return 'ja';
+		}
+	}
+
+	return 'en';
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
 	let currentLocale = event.cookies.get('currentLocale');
 
 	if (!currentLocale) {
-		const acceptLanguageHeader = event.request.headers.get('accept-language');
-		currentLocale = inferPreferredLanguage(acceptLanguageHeader);
+		currentLocale = inferPreferredLocale(event.request.headers.get('accept-language'));
 	}
 
 	event.locals.currentLocale = currentLocale;
-	event.cookies.set('currentLocale', currentLocale, { path: '/', httpOnly: false, secure: false });
-	setCurrentLocale(currentLocale);
+	event.cookies.set('currentLocale', currentLocale, {
+		path: '/',
+		httpOnly: false,
+		secure: false,
+	});
 
 	const response = await resolve(event, {
 		transformPageChunk: ({ html }) => html.replace('%lang%', currentLocale),
@@ -80,27 +118,115 @@ export const handle: Handle = async ({ event, resolve }) => {
 };
 ```
 
-**SPA** (`hooks.client.ts`):
+</details>
+
+<details>
+  <summary>For SPA: `localStorage`, and `navigator.language` Detection</summary>
+
+Create reusable helper functions for locale detection and matching.
+
+They will be used in `layout.ts` in the next step to initialize the client-side locale.
 
 ```ts
-import { inferPreferredLanguage, setCurrentLocale } from '$lib/helpers';
+export async function setCurrentLocale(locale: string) {
+	localStorage.setItem('currentLocale', locale);
+}
 
-const currentLocale = inferPreferredLanguage();
+const supportedLocales = ['en', 'ja'];
 
-await setCurrentLocale(currentLocale);
+export function getCurrentLocale() {
+	const localStorageLocale = localStorage.getItem('currentLocale');
+
+	if (localStorageLocale) {
+		return localStorageLocale;
+	}
+
+	const preferredLocale = navigator.languages.find((language) =>
+		supportedLocales.includes(language),
+	);
+
+	if (preferredLocale) {
+		return preferredLocale;
+	}
+
+	return 'en';
+}
 ```
 
-**4. The Root Layout**
+</details>
 
-`sveltext` uses Svelte's native `{#key}` block for instant language switching.
+**Load the Message Catalog in the Root Layout `load` Function**
+
+<details>
+  <summary>For SSR: Use the Locale from event.locals to Load the Catalog</summary>
+
+During server-side rendering, read the locale previously injected into `event.locals` by `hooks.server.ts`, and use it to load the corresponding message catalog in the root layout's `load` function. This ensures the correct catalog is selected per request and avoids cross-request state pollution by keeping locale resolution request-scoped and deterministic.
+
+**src/routes/+layout.server.ts**
+
+```ts
+import type { LayoutServerLoad } from './$types';
+
+export const load: LayoutServerLoad = async ({ locals }) => {
+	const currentLocale = locals.currentLocale;
+	const { messages } = await import(`../locales/${currentLocale}.po`);
+	return {
+		currentLocale,
+		messages,
+	};
+};
+```
+
+</details>
+
+<details>
+  <summary>For SPA: Use the Detected Locale to Load the Catalog</summary>
+
+In a client-side environment, call the helper functions to determine locale and load the appropriate message catalog in the root layout's `load` function.
+
+**src/routes/+layout.ts**
+
+```ts
+import type { LayoutLoad } from './$types';
+import { getCurrentLocale } from '$lib/i18n';
+
+export const ssr = false;
+
+export const load: LayoutLoad = async () => {
+	const currentLocale = getCurrentLocale();
+	const { messages } = await import(`../locales/${currentLocale}.po`);
+
+	return {
+		currentLocale,
+		messages,
+	};
+};
+```
+
+</details>
+
+**5. The Root Layout Component**
+
+Sveltext uses the `SveltextRoot` component inside Svelte's native `{#key}` block to manage locale state. When `data.currentLocale` changes, the entire render tree is destroyed and recreated with the new locale. This guarantees that all components are re-initialized with the correct message catalog and prevents stale translations.
+
+**src/routes/+layout.svelte**
+
+⚠️ Translation functions are **not available directly inside this file**. Because the layout is responsible for bootstrapping the locale and catalog, translations cannot be evaluated at this level.
+
+If you need translated content in layout-level UI (such as headers or footers), create a separate component and render it inside `<SveltextRoot>`. Translations should always live within the initialized Sveltext component tree.
 
 ```svelte
 <script lang="ts">
-    let { children } = $props();
+	import { SveltextRoot } from 'sveltext';
+    let { data, children } = $props();
 </script>
 
-<!-- The currentLocale implementation depends on the rednering strategy -->
-{#key currentLocale}
-    {@render children()}
+{#key data.currentLocale}
+	<SveltextRoot locale={data.currentLocale} messages={data.messages}>
+        {/* ⚠️ Writing t`Test` right here will crash */}
+        {@render children()}
+        {/* ✅ Place translated content inside a separate component */}
+        <Footer />
+	</SveltextRoot>
 {/key}
 ```

@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import { resolve } from '$app/paths';
-	import { t } from 'sveltext';
 	import favicon from '$lib/assets/favicon.svg';
-	import { setCurrentLocale } from '$lib/helpers';
+	import { SveltextRoot } from 'sveltext';
+	import Header from './Header.svelte';
+	import Footer from './Footer.svelte';
 
 	let { data, children } = $props();
 </script>
@@ -13,48 +12,11 @@
 </svelte:head>
 
 {#key data.currentLocale}
-	<nav>
-		<a href={resolve('/')}>
-			{t`Home Page`}
-		</a>
-		|
-		<a href={resolve('/test')}>
-			{t`Sub Page`}
-		</a>
-	</nav>
+	<SveltextRoot locale={data.currentLocale} messages={data.messages}>
+		<Header currentLocale={data.currentLocale} />
 
-	<section>
-		<h2>{t`Switch language`}</h2>
+		{@render children()}
 
-		{#each ['en', 'ja'] as lang (lang)}
-			{#if lang !== data.currentLocale}
-				<form
-					method="POST"
-					action="/?/setLocale"
-					use:enhance
-					onsubmit={() => {
-						setCurrentLocale(lang);
-					}}
-				>
-					<input type="hidden" name="locale" value={lang} />
-					<button type="submit">
-						{lang}
-					</button>
-				</form>
-			{/if}
-		{/each}
-	</section>
-
-	{@render children()}
-
-	<footer>
-		<hr />
-
-		<p>
-			Made with ❤️ by <a href="https://chunnamwong.com">Chun Nam Wong</a>
-			<br />
-			{t`Found a bug or weird edge case? Please open an issue:`}
-			<a href="https://github.com/chunnamwong/sveltext">https://github.com/chunnamwong/sveltext</a>
-		</p>
-	</footer>
+		<Footer />
+	</SveltextRoot>
 {/key}

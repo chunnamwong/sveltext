@@ -14,6 +14,9 @@ msgstr "アイテムの同期中にエラーが発生しました"
 msgid "Found a bug or weird edge case? Please open an issue:"
 msgstr "バグや変なエッジケースを見つけたら、ぜひ Issue を作成してください："
 
+msgid "Hello {name} from SvelteKit form actions!"
+msgstr "{name}さんこんにちは、SvelteKitのフォームアクションから！"
+
 msgid "Hello {name}!"
 msgstr "こんにちは、{name}さん！"
 
@@ -52,6 +55,9 @@ msgstr "更新（失敗）"
 msgid "Refreshed"
 msgstr "更新しました"
 
+msgid "Send Email"
+msgstr "メールを送る"
+
 msgid "Sub Page"
 msgstr "サブページ"
 
@@ -61,8 +67,14 @@ msgstr "言語を切り替える"
 msgid "Test"
 msgstr "テスト"
 
+msgid "Test Email to {name}"
+msgstr "{name}へのテストメール"
+
 msgid "Toolbar: {refresh} {refreshFail}"
 msgstr "ツールバー: {refresh} {refreshFail}"
+
+msgid "Translate on server"
+msgstr "サーバーで翻訳"
 
 msgid "You have {itemCount} ({itemLabel})."
 msgstr "{itemCount}（{itemLabel}）あります。"

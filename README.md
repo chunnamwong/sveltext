@@ -39,7 +39,9 @@ Import the `t` tag and write your text naturally.
 
 Sometimes you need to define translated text outside of Svelte's render cycle, such as in Zod schemas, navigation arrays, or constant files.
 
-If you use `t` outside of a component, it will try to evaluate immediately before the dictionary might be loaded. Instead, use the `msg` tag. It marks the string for the CLI extractor and compiles it to a hash, but **delays** the actual dictionary lookup until you need it.
+The `t` function is **not supported outside of a Svelte component**. Message catalogs are loaded inside the Svelte context to prevent [cross-request state pollution in SSR](https://svelte.dev/docs/kit/state-management#Avoid-shared-state-on-the-server), which means the active catalog is only available within the component tree. Outside of it, no catalog is accessible.
+
+Instead, use the `msg` tag. It marks the string for the CLI extractor and compiles it to a hash, while **deferring** the actual dictionary lookup until render time inside a component.
 
 ```ts
 // src/lib/helpers.ts
@@ -66,6 +68,8 @@ export const errors = {
 	}
 </script>
 ```
+
+If you truly need translation on the server outside the component tree, use the pure runtime function `_` and manually provide the message catalog (see the server code usage introduction).
 
 ### Plurals
 
@@ -131,6 +135,31 @@ Use the `<T>` component to interpolate rich UI elements without breaking the sen
 ```
 
 _Because `sveltext` is Svelte 5 native, your interpolated snippets can contain fully interactive components, state bindings, or any complex UI you need._
+
+### Using the pure runtime function `_` on the server
+
+To use Sveltext while remaining safe from cross-request state pollution, use the pure runtime function `_` and manually load and pass the message catalog when performing server-side actions.
+
+```ts
+import { msg, _ } from 'sveltext';
+import type { Actions } from './$types';
+
+export const actions = {
+	sendEmail: async (event) => {
+		const {
+			locals: { currentLocale },
+		} = event;
+		const { messages } = await import(`../locales/${currentLocale}.po`);
+		const sveltextContext = { locale: currentLocale, messages };
+		const name = 'John';
+		const title = _(msg`Test Email to ${name}`, sveltextContext);
+		const body = _(msg`Hello ${name} from SvelteKit form actions!`, sveltextContext);
+		console.log(
+			`Sending email to the user with ${currentLocale}:\n\nTitle: ${title}\nBody: ${body}`,
+		);
+	},
+} satisfies Actions;
+```
 
 ## 🛠️ The CLI Extractor
 

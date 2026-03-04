@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { c, msg, plural, t, T } from 'sveltext';
+	import { c, msg, plural, T, t } from 'sveltext';
 	import { errors } from '$lib/helpers';
+	import { enhance } from '$app/forms';
 
 	let name = 'John Doe';
 	let greeting = msg`Hello ${name}!`;
@@ -69,4 +70,19 @@
 			</button>
 		{/snippet}
 	</T>
+</section>
+
+<section>
+	<h2>{t`Translate on server`}</h2>
+
+	<form
+		method="POST"
+		action="/?/sendEmail"
+		use:enhance
+		onsubmit={() => {
+			alert('The translated email has been logged in the server console.');
+		}}
+	>
+		<button type="submit">{t`Send Email`}</button>
+	</form>
 </section>
