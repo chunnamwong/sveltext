@@ -1,5 +1,11 @@
 # sveltext
 
+## 0.1.1
+
+### Patch Changes
+
+- [#8](https://github.com/chunnamwong/sveltext/pull/8) [`de33c25`](https://github.com/chunnamwong/sveltext/commit/de33c250ff597b6db2f32ec85c4bc2667d6f7804) Thanks [@chunnamwong](https://github.com/chunnamwong)! - fix: avoid crash when `t()` is the only lazy translation call
+
 ## 0.1.0
 
 ### Minor Changes
