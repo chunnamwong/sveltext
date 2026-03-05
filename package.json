@@ -55,6 +55,7 @@
 		"zimmerframe": "^1.1.4"
 	},
 	"devDependencies": {
+		"@changesets/changelog-github": "^0.6.0",
 		"@changesets/cli": "^2.30.0",
 		"@types/node": "^24.10.13"
 	}
