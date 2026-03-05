@@ -64,7 +64,10 @@ export async function sveltext() {
 						}
 					}
 
-					if (state.messages.filter(({ tagName }) => tagName !== 'msg').length > 0) {
+					if (
+						state.tImport ||
+						state.messages.filter(({ tagName }) => tagName !== 'msg').length > 0
+					) {
 						s.appendRight(
 							/** @type {any} */ (ast).instance.content.start,
 							`import { createSveltextTFunction } from 'sveltext/internal';
