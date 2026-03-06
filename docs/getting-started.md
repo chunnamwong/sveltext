@@ -155,12 +155,14 @@ export function getCurrentLocale() {
 
 </details>
 
-**Load the Message Catalog in the Root Layout `load` Function**
+**4. Load the Message Catalog in the Root Layout `load` Function**
 
 <details>
-  <summary>For SSR: Use the Locale from event.locals to Load the Catalog</summary>
+  <summary>For SSR: Read the Locale from event.locals and Load the Catalog in the universal layout</summary>
 
-During server-side rendering, read the locale previously injected into `event.locals` by `hooks.server.ts`, and use it to load the corresponding message catalog in the root layout's `load` function. This ensures the correct catalog is selected per request and avoids cross-request state pollution by keeping locale resolution request-scoped and deterministic.
+**4.1. Resolve the locale in the server layout**
+
+During server-side rendering, read the locale previously injected into `event.locals` by `hooks.server.ts`. The server load only returns the resolved locale, keeping the response lightweight and avoiding catalog serialization.
 
 **src/routes/+layout.server.ts**
 
@@ -169,7 +171,29 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const currentLocale = locals.currentLocale;
-	const { messages } = await import(`../locales/${currentLocale}.po`);
+	return {
+		currentLocale,
+	};
+};
+```
+
+**4.2. Load the catalog in the universal layout**
+
+The universal layout receives the locale from the server load and dynamically imports the corresponding message catalog.
+
+Because this happens in `+layout.ts`, the catalog is loaded directly by the runtime instead of being serialized inside the SvelteKit `__data.json` request.
+
+**src/routes/+layout.ts**
+
+```ts
+import type { LayoutLoad } from './$types';
+import type { MessageCatalog } from 'sveltext';
+
+const catalogLoaders = import.meta.glob<MessageCatalog>('../locales/*.po', { import: 'messages' });
+
+export const load: LayoutLoad = async ({ data }) => {
+	const currentLocale = data.currentLocale;
+	const messages = await catalogLoaders[`../locales/${currentLocale}.po`]();
 	return {
 		currentLocale,
 		messages,
@@ -188,13 +212,16 @@ In a client-side environment, call the helper functions to determine locale and 
 
 ```ts
 import type { LayoutLoad } from './$types';
+import type { MessageCatalog } from 'sveltext';
 import { getCurrentLocale } from '$lib/i18n';
 
 export const ssr = false;
 
+const catalogLoaders = import.meta.glob<MessageCatalog>('../locales/*.po', { import: 'messages' });
+
 export const load: LayoutLoad = async () => {
 	const currentLocale = getCurrentLocale();
-	const { messages } = await import(`../locales/${currentLocale}.po`);
+	const messages = await catalogLoaders[`../locales/${currentLocale}.po`]();
 
 	return {
 		currentLocale,

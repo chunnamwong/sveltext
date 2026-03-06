@@ -1,5 +1,6 @@
 import { msg, _ } from 'sveltext';
 import type { Actions } from './$types';
+import { loadMessageCatalog } from '$lib/i18n';
 
 export const actions = {
 	setLocale: async (event) => {
@@ -13,7 +14,7 @@ export const actions = {
 		const {
 			locals: { currentLocale }
 		} = event;
-		const { messages } = await import(`../locales/${currentLocale}.po`);
+		const messages = await loadMessageCatalog(currentLocale);
 		const sveltextContext = { locale: currentLocale, messages };
 		const name = 'John';
 		const title = _(msg`Test Email to ${name}`, sveltextContext);

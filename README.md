@@ -86,7 +86,7 @@ If you truly need translation on the server outside the component tree, use the 
         one: '# Apple',
         other: '# Apples',
     })}
-    <!-- This will be inlined during compile-time into "5 Apples" -->
+    <!-- This will be inlined at compile time into the equivalent of t`5 Apples` -->
     {plural(5, {
         one: '# Apple',
         other: '# Apples',
@@ -142,14 +142,17 @@ To use Sveltext while remaining safe from cross-request state pollution, use the
 
 ```ts
 import { msg, _ } from 'sveltext';
+import type { MessageCatalog } from 'sveltext';
 import type { Actions } from './$types';
+
+const catalogLoaders = import.meta.glob<MessageCatalog>('../locales/*.po', { import: 'messages' });
 
 export const actions = {
 	sendEmail: async (event) => {
 		const {
 			locals: { currentLocale },
 		} = event;
-		const { messages } = await import(`../locales/${currentLocale}.po`);
+		const messages = await catalogLoaders[`../locales/${currentLocale}.po`]();
 		const sveltextContext = { locale: currentLocale, messages };
 		const name = 'John';
 		const title = _(msg`Test Email to ${name}`, sveltextContext);
