@@ -1,11 +1,15 @@
 import type { Handle } from '@sveltejs/kit';
-import { inferPreferredLocale } from '$lib/helpers';
+import { matchLocale } from '$lib/i18n';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	let currentLocale = event.cookies.get('currentLocale');
 
-	if (!currentLocale) {
-		currentLocale = inferPreferredLocale(event.request.headers.get('accept-language'));
+	if (currentLocale) {
+		// Ensure the locale in cookie is supported
+		currentLocale = matchLocale(currentLocale);
+	} else {
+		// Match again with Accept-Language header
+		currentLocale = matchLocale(event.request.headers.get('accept-language'));
 	}
 
 	event.locals.currentLocale = currentLocale;

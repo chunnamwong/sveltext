@@ -1,11 +1,11 @@
 import type { LayoutLoad } from './$types';
-import { getCurrentLocale } from '$lib/i18n';
+import { getCurrentLocale, loadMessageCatalog } from '$lib/i18n';
 
 export const ssr = false;
 
 export const load: LayoutLoad = async () => {
 	const currentLocale = getCurrentLocale();
-	const { messages } = await import(`../locales/${currentLocale}.po`);
+	const messages = await loadMessageCatalog(currentLocale);
 
 	return {
 		currentLocale,
