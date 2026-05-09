@@ -39,7 +39,7 @@ export function getCurrentLocale() {
 	);
 
 	if (preferredLocale) {
-		return preferredLocale;
+		return matchLocale(preferredLocale);
 	}
 
 	return 'en';
